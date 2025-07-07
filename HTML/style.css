@@ -1,0 +1,79 @@
+:root {
+    --color-text: #2f1e48;
+    --color-bg2: #fff;
+    --color-bg1: #593d80;
+    --color-off: red;
+    --color-on: green;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    height: 100vh;
+}
+
+header {
+    background-color: var(--color-text);
+    color: var(--color-bg2);
+    text-align: center;
+    padding: 10px;
+}
+
+footer {
+    background-color: var(--color-text);
+    color: var(--color-bg2);
+    text-align: center;
+    padding: 10px;
+}
+
+.gallery {
+    background-color: var(--color-bg1);
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 20px;
+    justify-content: space-evenly;
+    align-content: space-around;
+}
+
+.gallery article {
+    background-color: var(--color-bg2);
+    border-radius: 5px;
+    min-width: 40%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    color: var(--color-text);
+}
+
+.PowerOff {
+    background-color: var(--color-off);
+    padding: 5px 10px;
+    color: var(--color-bg2);
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.PowerOn {
+    background-color: var(--color-on);
+    padding: 5px 10px;
+    color: var(--color-bg2);
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.PowerOn:hover, .PowerOff:hover {
+    cursor: pointer;
+}
