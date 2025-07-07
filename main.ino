@@ -1,117 +1,108 @@
-/* Juan Pablo Arancibia 2013*/
-
+/**
+ * @file main.ino
+ * @authors Milton Hernández Morales (milherna@umag.cl) Cristian Flores Miranda (crisflor@umag.cl) Bruno Martinez Flores brumarti@umag.cl
+ * @brief Este programa implementa un servidor web para controlar los pines de un Arduino
+ * @version 0.1
+ * @date 2025-07-02
+ *
+ * @copyright Copyright (c) 2025
+ *
+ */
 #include <SPI.h>
 #include <Ethernet.h>
 
-// Se definen los parametros de la red para el arduino
+// Se definen los parámetros de la red para el arduino
 byte mac[] = {0x44,0x6D,0x57,0x33,0xA5,0x9F};
 byte ip[] = {10,9,0,111};
 EthernetServer server(80);
 
-// Variables para los pines
-const int ledPin0 = 0;
-const int ledPin1 = 1;
-const int ledPin2 = 2;
-const int ledPin3 = 3;
+// Estructura para los pines
+typedef struct {
+	int number;
+	bool state;
+} PIN;
+#define MAX_PINS 4
+PIN pines[MAX_PINS];
 
-// Textos
 String readString = String(30); // Petición HTTP
-String state0 = String(3);
-String state1 = String(3);
-String state2 = String(3);
-String state3 = String(3);
 
+/**
+ * @brief Función de configuración del programa
+ *
+*/
 void setup()
 {
-  Ethernet.begin(mac, ip);    // comienzo Ethernet
-  server.begin();             // iniciar datos servidor
-  pinMode(ledPin0,OUTPUT);    // definir pines como salida
-  digitalWrite(ledPin0,HIGH); // Se define el pin en alto
-  state0="OFF";               // Estado del pin APAGADO
-  pinMode(ledPin1,OUTPUT);
-  digitalWrite(ledPin1,HIGH);
-  state1="OFF";
-  pinMode(ledPin2,OUTPUT);
-  digitalWrite(ledPin2,HIGH);
-  state2="OFF";
-  pinMode(ledPin3,OUTPUT);
-  digitalWrite(ledPin3,HIGH);
-  state3="OFF";
+  Serial.begin(9600);
+  while (!Serial);
+ 
+	Ethernet.begin(mac, ip);    // Comienzo Ethernet
+	server.begin();             // Iniciar datos servidor
+
+	for (int i=0;i<MAX_PINS;i++)
+	{
+		pines[i].number=i+2;
+		pinMode(pines[i].number, OUTPUT);    // Definir pines como salida
+		digitalWrite(pines[i].number, HIGH); // Se define el pin en alto
+		pines[i].state=false;
+	}
 }
 
+/**
+ * @brief  Función de bucle que se encarga de recibir las peticiones HTTP
+ *
+*/
 void loop()
 {
- EthernetClient cliente = server.available(); //crear una conexion cliente
- if (cliente)
- {
-  while (cliente.connected())         //cliente conectado
-  {
-    if(cliente.available())
-    {
-      char c = cliente.read();
-      if(readString.length() < 30)    //peticion HTTP Caracteres
-        readString.concat(c);
-      if (c == '\n') //si la peticion finalizo
-      {
-        int S=readString.indexOf("P=");
-          if(readString.substring(S,S+5)=="P=111")
-          {
-            digitalWrite(ledPin0,LOW);
-            state0="ON";
-          }else if(readString.substring(S,S+5)=="P=110")
-          {
-            digitalWrite(ledPin0,HIGH);
-            state0="OFF";
-          }else if(readString.substring(S,S+5)=="P=121")
-          {
-            digitalWrite(ledPin1,LOW);
-            state1="ON";
-          }else if(readString.substring(S,S+5)=="P=120")
-          {
-            digitalWrite(ledPin1,HIGH);
-            state1="OFF";
-          }else if(readString.substring(S,S+5)=="P=131")
-          {
-            digitalWrite(ledPin2,LOW);
-            state2="ON";
-          }else if(readString.substring(S,S+5)=="P=130")
-          {
-            digitalWrite(ledPin2,HIGH);
-            state2="OFF";
-          }else if(readString.substring(S,S+5)=="P=141")
-          {
-            digitalWrite(ledPin3,LOW);
-            state3="ON";
-          }else if(readString.substring(S,S+5)=="P=140")
-          {
-            digitalWrite(ledPin3,HIGH);
-            state3="OFF";
-          }
+	EthernetClient cliente = server.available(); // Crear una conexión cliente
+	if (cliente)
+	{
+		while (cliente.connected())         // Cliente conectado
+		{
+			if(cliente.available())
+			{
+				char c = cliente.read();
+				if(readString.length() < 30)    // Petición HTTP Caracteres
+					readString.concat(c);
+				if (c == '\n') // Si la petición finalizó
+				{
+					int S=readString.indexOf("P=");
+					int pin_state = readString.substring(S+2,S+3).toInt();
+					int pin_number = readString.substring(S+3,S+4).toInt();
 
-          //Cabecera HTTP estandar
-          cliente.print("HTTP/1.1 200 OK");
-          cliente.print("Content-Type: text/html");
-          //Pagina Web en HTML
-          cliente.print("<html><head><title>LAMPARA ON/OFF</title></head>");
-          cliente.print("<body width=100% height=100%><center><h1>LAMPARAS ON/OFF</h1><br><br>");
-	        cliente.print("Estado de la lampara 0: ");
-          cliente.print(state0);
-          cliente.print("<input type=submit value=ON style=width:50px;height:25px onClick=location.href='./?P=111\'>");
-          cliente.print("<input type=submit value=OFF style=width:50px;height:25px onClick=location.href='./?P=110\'><br><br>");
-          cliente.print("Estado de la lampara 1: ");
-          cliente.print(state1);
-          cliente.print("<input type=submit value=ON style=width:50px;height:25px onClick=location.href='./?P=121\'>");
-          cliente.print("<input type=submit value=OFF style=width:50px;height:25px onClick=location.href='./?P=120\'><br><br>");
-          cliente.print("Estado de la lampara 2: ");
-          cliente.print(state2);
-          cliente.print("<input type=submit value=ON style=width:50px;height:25px onClick=location.href='./?P=131\'>");
-          cliente.print("<input type=submit value=OFF style=width:50px;height:25px onClick=location.href='./?P=130\'><br><br>");
-          cliente.print("Estado de la lampara 3: ");
-          cliente.print("</center></body></html>");
-          cliente.stop();//Cierro conexion con el cliente
-          readString="";
-      }
-    }
-  }
-}
+					if (pin_number >= 0 && pin_number < MAX_PINS)
+						if (pin_state == 1)
+						{
+							pines[pin_number].state=true;
+							digitalWrite(pines[pin_number].number, LOW);
+						}
+						else
+						{
+							pines[pin_number].state=false;
+							digitalWrite(pines[pin_number].number, HIGH);
+						}
+
+						// Cabecera HTTP estándar
+						cliente.println("HTTP/1.1 200 OK");
+						cliente.println("Content-Type: text/html");
+						cliente.println("Connection: close");
+						cliente.println(); // Línea vacía antes del contenido HTML
+
+						// Página Web en HTML
+						cliente.print("<html><head><title>LAMPARA ON/OFF</title></head>");
+						cliente.print("<body width=100% height=100%><center><h1>LAMPARAS ON/OFF</h1><br><br>");
+
+						for (int i=0;i<MAX_PINS;i++)
+						{
+							cliente.print("Estado de la lampara " + String(i+1) + ": ");
+							pines[i].state ? cliente.print("ON ") : cliente.print("OFF ");
+							cliente.print("<input type=submit value=ON style=width:50px;height:25px onClick=location.href='./?P=1"+String(i)+"\'>");
+							cliente.print("<input type=submit value=OFF style=width:50px;height:25px onClick=location.href='./?P=0"+String(i)+"\'><br><br>");
+						}
+						cliente.print("</center></body></html>");
+						cliente.stop(); // Cierre de la conexión con el cliente
+						readString="";
+				}
+			}
+		}
+	}
 }
