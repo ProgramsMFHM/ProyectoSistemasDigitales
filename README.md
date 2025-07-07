@@ -66,9 +66,3 @@ El proyecto está organizado de la siguiente forma:
 3. Verificar la dirección IP asignada al Arduino.
 4. Acceder desde el navegador a la IP del dispositivo.
 5. Utilizar la interfaz para enviar comandos a través de la red local.
-
-```javascript
-// Ejemplo con fetch()
-fetch("http://<ip_del_dispositivo>/led/on")
-  .then(response => response.text())
-  .then(data => console.log(data));
