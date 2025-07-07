@@ -1,9 +1,9 @@
 
 
-# Proyecto de Iluminación Domótica
+# Proyecto de Iluminación Domótica 💡🤖
 
 **Universidad de Magallanes - Curso de Sistemas Digitales**  
-**Carrera de Ingeniería en Computación e Informática**  
+**Ingeniería en Computación e Informática**  
 **Autores: Milton Hernández, Bruno Martínez y Cristian Flores**  
 **Profesor guía: Eduardo Peña**  
 **Basado en el proyecto original de Juan Pablo Arancibia**
