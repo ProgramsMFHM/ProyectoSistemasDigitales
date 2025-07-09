@@ -29,6 +29,15 @@ async function setLamps() {
                 lamp.innerHTML += `<button class="PowerEnable lampButton" lamp="${data.pins[i].number}">Habilitar</button>`
             }
             break;
+        case "Bright":
+            if (data.pins[i].state == 1) {
+                lamp.innerHTML += `<p>Esta lámpara está habilitada</p>`
+                lamp.innerHTML += `<button class="PowerDisable lampButton" lamp="${data.pins[i].number}">Deshabilitar</button>`
+            } else {
+                lamp.innerHTML += `<p>Esta lámpara está deshabilitada</p>`
+                lamp.innerHTML += `<button class="PowerEnable lampButton" lamp="${data.pins[i].number}">Habilitar</button>`
+            }
+            break;
         }
         fragment.appendChild(lamp);
     }
@@ -71,6 +80,19 @@ async function setLamps() {
                     }
                     break;
                 case "Proximity":
+                    if (data.new_state == 1) {
+                        lamp.classList.remove('PowerEnable');
+                        lamp.classList.add('PowerDisable');
+                        lamp.innerHTML = "Deshabilitar";
+                        lamp.previousElementSibling.innerHTML = "Esta lámpara está habilitada";
+                    } else {
+                        lamp.classList.remove('PowerDisable');
+                        lamp.classList.add('PowerEnable');
+                        lamp.innerHTML = "Habilitar";
+                        lamp.previousElementSibling.innerHTML = "Esta lámpara está deshabilitada";
+                    }
+                    break;
+                case "Bright":
                     if (data.new_state == 1) {
                         lamp.classList.remove('PowerEnable');
                         lamp.classList.add('PowerDisable');

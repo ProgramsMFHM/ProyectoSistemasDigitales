@@ -10,6 +10,9 @@
  */
 #include <SPI.h>
 #include <Ethernet.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_TSL2561_U.h>
 
 // Se definen los parámetros de la red para el Arduino
 byte mac[] = {0x44,0x6D,0x57,0x33,0xA5,0x9F};
@@ -98,6 +101,58 @@ class ProximityPin : public Pin {
     }
 };
 
+// Creamos el sensor con dirección por defecto
+Adafruit_TSL2561_Unified tsl = Adafruit_TSL2561_Unified(TSL2561_ADDR_FLOAT, 12345);
+class BrightPin : public Pin {
+  public:
+    float lux_umbral = 50.0;
+
+    BrightPin(int _number, String _name, int _associated_pin)
+      : Pin(_number, _name, _associated_pin) {
+        type = "Bright";
+    }
+
+    void setup_associated_pin() override {
+        pinMode(associated_pin, OUTPUT);
+
+        if (!tsl.begin()) {
+            Serial.println("No se encontró el sensor TSL2561. Verifica conexión.");
+            while (1);
+        }
+
+        // Configuraciones recomendadas
+        tsl.enableAutoRange(true);  // Ajuste automático de ganancia
+        tsl.setIntegrationTime(TSL2561_INTEGRATIONTIME_402MS);  // Más precisión
+
+        Serial.println("Sensor TSL2561 iniciado.");
+    }
+
+    void check_pin_state() override {
+        if (!state) {
+            digitalWrite(associated_pin, HIGH); // Apagar
+            return;
+        }
+
+        sensors_event_t event;
+        tsl.getEvent(&event);
+
+        if (event.light) {
+            Serial.print("Luz detectada: ");
+            Serial.print(event.light);
+            Serial.println(" lux");
+
+            if (event.light < lux_umbral) {
+                digitalWrite(associated_pin, LOW); // Activar
+            } else {
+                digitalWrite(associated_pin, HIGH); // Apagar
+            }
+        } else {
+            Serial.println("Sensor saturado o sin lectura válida.");
+            digitalWrite(associated_pin, HIGH);  // Prevención: desactiva la salida
+        }
+    }
+};
+
 // Definimos los pines
 #define MAX_PINS 4
 Pin* pins[MAX_PINS];
@@ -125,7 +180,7 @@ void setup()
     Serial.println(Ethernet.localIP());
 
     // Creamos los pines
-    pins[0] = new Pin(0, "Sala de Estar", 2);
+    pins[0] = new BrightPin(0, "Sala de Estar", 2);
     pins[1] = new Pin(1, "Dormitorio Infantil", 3);
     pins[2] = new Pin(2, "Dormitorio Principal", 4);
     pins[3] = new ProximityPin(3, "Living", 5, 7, 8);
@@ -183,7 +238,7 @@ void loop()
 
     for (int i=0;i<MAX_PINS;i++) pins[i]->check_pin_state();
 
-    delay(300);
+    delay(250);
 }
 
 /**
