@@ -10,12 +10,25 @@ async function setLamps() {
         lamp.innerHTML = `
             <h2>${data.pins[i].name}</h2>
             `
-        if (data.pins[i].state == 1) {
-            lamp.innerHTML += `<p>Esta lámpara está encendida</p>`
-            lamp.innerHTML += `<button class="PowerOff lampButton" lamp="${data.pins[i].number}">Apagar</button>`
-        } else {
-            lamp.innerHTML += `<p>Esta lámpara está apagada</p>`
-            lamp.innerHTML += `<button class="PowerOn lampButton" lamp="${data.pins[i].number}">Encender</button>`
+        switch (data.pins[i].type) {
+        case "Standard":
+            if (data.pins[i].state == 1) {
+                lamp.innerHTML += `<p>Esta lámpara está encendida</p>`
+                lamp.innerHTML += `<button class="PowerOff lampButton" lamp="${data.pins[i].number}">Apagar</button>`
+            } else {
+                lamp.innerHTML += `<p>Esta lámpara está apagada</p>`
+                lamp.innerHTML += `<button class="PowerOn lampButton" lamp="${data.pins[i].number}">Encender</button>`
+            }
+            break;
+        case "Proximity":
+            if (data.pins[i].state == 1) {
+                lamp.innerHTML += `<p>Esta lámpara está habilitada</p>`
+                lamp.innerHTML += `<button class="PowerDisable lampButton" lamp="${data.pins[i].number}">Deshabilitar</button>`
+            } else {
+                lamp.innerHTML += `<p>Esta lámpara está deshabilitada</p>`
+                lamp.innerHTML += `<button class="PowerEnable lampButton" lamp="${data.pins[i].number}">Habilitar</button>`
+            }
+            break;
         }
         fragment.appendChild(lamp);
     }
@@ -27,9 +40,9 @@ async function setLamps() {
             const lampNumber = lamp.getAttribute('lamp');
             let url, response, data;
 
-            if (lamp.classList.contains('PowerOn')) {
+            if (lamp.classList.contains('PowerOn') || lamp.classList.contains('PowerEnable')) {
                 url = `http://10.9.11.111/?P=${lampNumber}1`;
-            } else if (lamp.classList.contains('PowerOff')) {
+            } else if (lamp.classList.contains('PowerOff') || lamp.classList.contains('PowerDisable')) {
                 url = `http://10.9.11.111/?P=${lampNumber}0`;
             } else {
                 return;
@@ -43,16 +56,33 @@ async function setLamps() {
                 data = await response.json();
                 console.log(data);
 
-                if (data.new_state == 1) {
-                    lamp.classList.remove('PowerOn');
-                    lamp.classList.add('PowerOff');
-                    lamp.innerHTML = "Apagar";
-                    lamp.previousElementSibling.innerHTML = "Esta lámpara está encendida";
-                } else {
-                    lamp.classList.remove('PowerOff');
-                    lamp.classList.add('PowerOn');
-                    lamp.innerHTML = "Encender";
-                    lamp.previousElementSibling.innerHTML = "Esta lámpara está apagada";
+                switch (data.type) {
+                case "Standard":
+                    if (data.new_state == 1) {
+                        lamp.classList.remove('PowerOn');
+                        lamp.classList.add('PowerOff');
+                        lamp.innerHTML = "Apagar";
+                        lamp.previousElementSibling.innerHTML = "Esta lámpara está encendida";
+                    } else {
+                        lamp.classList.remove('PowerOff');
+                        lamp.classList.add('PowerOn');
+                        lamp.innerHTML = "Encender";
+                        lamp.previousElementSibling.innerHTML = "Esta lámpara está apagada";
+                    }
+                    break;
+                case "Proximity":
+                    if (data.new_state == 1) {
+                        lamp.classList.remove('PowerEnable');
+                        lamp.classList.add('PowerDisable');
+                        lamp.innerHTML = "Deshabilitar";
+                        lamp.previousElementSibling.innerHTML = "Esta lámpara está habilitada";
+                    } else {
+                        lamp.classList.remove('PowerDisable');
+                        lamp.classList.add('PowerEnable');
+                        lamp.innerHTML = "Habilitar";
+                        lamp.previousElementSibling.innerHTML = "Esta lámpara está deshabilitada";
+                    }
+                    break;
                 }
             } catch (error) {
                 console.error('Error en la petición:', error);

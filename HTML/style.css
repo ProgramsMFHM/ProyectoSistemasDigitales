@@ -4,6 +4,8 @@
     --color-bg1: #593d80;
     --color-off: red;
     --color-on: green;
+    --color-disable: rgba(255, 166, 0, 0.913);
+    --color-enable: rgb(8, 0, 255);
 }
 
 * {
@@ -74,6 +76,24 @@ footer {
     font-weight: bold;
 }
 
-.PowerOn:hover, .PowerOff:hover {
+.PowerDisable {
+    background-color: var(--color-disable);
+    padding: 5px 10px;
+    color: var(--color-bg2);
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.PowerEnable {
+    background-color: var(--color-enable);
+    padding: 5px 10px;
+    color: var(--color-bg2);
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+.PowerOn:hover, .PowerOff:hover, .PowerEnable:hover, .PowerDisable:hover{
     cursor: pointer;
 }
